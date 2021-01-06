@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "jest"
+    "test": "jest",
+    "migrate": "npx knex migrate:latest",
+    "seed": "npx knex seed:run",
+    "rollback": "npx knex migrate:rollback"
   },
   "repository": {
     "type": "git",
