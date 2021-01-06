@@ -18,6 +18,12 @@ const parseBookModelToObject = (bookModel) => {
   };
 };
 
+const getBookById = (id) => {
+  return Book.where({ id })
+    .fetch({ require: true })
+    .then(parseBookModelToObject);
+};
+
 app.get('/api/books', (req, res) => {
   Book.fetchAll()
     .then((books) => {
@@ -53,10 +59,8 @@ const checkOutBook = ({ bookId, userId }) => {
 
 app.post('/api/books/:bookId/checkout/:userId', (req, res) => {
   const { bookId, userId } = req.params;
-  Book.where({ id: bookId })
-    .fetch({ require: true })
-    .then((bookModel) => {
-      const book = parseBookModelToObject(bookModel);
+  getBookById(bookId)
+    .then((book) => {
       if (book.checkedOut == true) {
         res.status(409).send();
       } else {
@@ -76,13 +80,10 @@ app.post('/api/books/:bookId/checkout/:userId', (req, res) => {
 
 app.get('/api/books/:bookId/checkout/:userId', (req, res) => {
   const { bookId, userId } = req.params;
-
-  Book.where({ id: bookId })
-    .fetch({ require: true })
+  getBookById(bookId)
     .catch((err) => {
       res.status(404).send();
     })
-    .then((bookModel) => parseBookModelToObject(bookModel))
     .then((book) => {
       let message = 'Book is available to be checked out';
       if (book.checkedOut && userId === `${book.user_id}`) {
@@ -102,31 +103,24 @@ app.get('/api/books/:bookId/checkout/:userId', (req, res) => {
 
 app.post('/api/books/:bookId/return', (req, res) => {
   const { bookId } = req.params;
-  Book.where({ id: bookId })
-    .fetch({ require: true })
+  getBookById(bookId)
     .catch((err) => {
       res.status(404).send();
     })
-    .then(
-      (bookModel) => parseBookModelToObject(bookModel),
-      () => {}
-    )
-    .then(
-      (book) => {
-        if (!book.checkedOut) res.status(409).send();
-        new Book({ id: bookId })
-          .save(
-            {
-              checkedOut: false,
-              dueDate: null,
-              user_id: null,
-            },
-            { require: true, method: 'update', patch: true }
-          )
-          .then(res.status(200).send());
-      },
-      () => {}
-    );
+    .then((book) => {
+      if (!book.checkedOut) res.status(409).send();
+      new Book({ id: bookId })
+        .save(
+          {
+            checkedOut: false,
+            dueDate: null,
+            user_id: null,
+          },
+          { require: true, method: 'update', patch: true }
+        )
+        .then(res.status(200).send());
+    })
+    .catch(() => {});
 });
 
 app.use((req, res) => {
