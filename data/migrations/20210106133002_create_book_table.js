@@ -4,6 +4,8 @@ exports.up = (knex) => {
     table.string('title').notNullable();
     table.string('author').notNullable();
     table.string('ISBN').notNullable();
+    table.date('dueDate');
+    table.integer('user_id');
     table.boolean('checkedOut').defaultTo(false);
     table.timestamps(true, true);
   });
