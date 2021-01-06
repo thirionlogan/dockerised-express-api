@@ -100,6 +100,35 @@ app.get('/api/books/:bookId/checkout/:userId', (req, res) => {
     });
 });
 
+app.post('/api/books/:bookId/return', (req, res) => {
+  const { bookId } = req.params;
+  Book.where({ id: bookId })
+    .fetch({ require: true })
+    .catch((err) => {
+      res.status(404).send();
+    })
+    .then(
+      (bookModel) => parseBookModelToObject(bookModel),
+      () => {}
+    )
+    .then(
+      (book) => {
+        if (!book.checkedOut) res.status(409).send();
+        new Book({ id: bookId })
+          .save(
+            {
+              checkedOut: false,
+              dueDate: null,
+              user_id: null,
+            },
+            { require: true, method: 'update', patch: true }
+          )
+          .then(res.status(200).send());
+      },
+      () => {}
+    );
+});
+
 app.use((req, res) => {
   res.status(404).send('resource not found');
 });

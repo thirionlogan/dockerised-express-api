@@ -147,5 +147,20 @@ describe('Endpoints', () => {
         expect(response.statusCode).toBe(404);
       });
     });
+
+    describe('POST /api/books/:bookId/return', () => {
+      it('should respond with 200 when book is returned', async () => {
+        const response = await request(app).post('/api/books/1/return');
+        expect(response.statusCode).toBe(200);
+      });
+      it('should respond with 409 when book is already returned', async () => {
+        const response = await request(app).post('/api/books/2/return');
+        expect(response.statusCode).toBe(409);
+      });
+      it('should respond with 404 when book is not found', async () => {
+        const response = await request(app).post('/api/books/100/return');
+        expect(response.statusCode).toBe(404);
+      });
+    });
   });
 });
