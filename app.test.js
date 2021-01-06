@@ -121,6 +121,7 @@ describe('Endpoints', () => {
           ISBN: '0618645616',
           checkedOut: true,
           dueDate: twoWeeksFromNow,
+          user_id: 1,
         });
 
         const response = await request(app).get('/api/books/1');
