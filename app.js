@@ -74,6 +74,32 @@ app.post('/api/books/:bookId/checkout/:userId', (req, res) => {
     });
 });
 
+app.get('/api/books/:bookId/checkout/:userId', (req, res) => {
+  const { bookId, userId } = req.params;
+
+  Book.where({ id: bookId })
+    .fetch({ require: true })
+    .catch((err) => {
+      res.status(404).send();
+    })
+    .then((bookModel) => parseBookModelToObject(bookModel))
+    .then((book) => {
+      let message = 'Book is available to be checked out';
+      if (book.checkedOut && userId === `${book.user_id}`) {
+        message = `User has book checked out. Return book before ${book.dueDate}`;
+      } else if (book.checkedOut) {
+        message = `Book is checked out. Come back at ${book.dueDate}`;
+      }
+      const responseBody = {
+        message,
+        checkedOut: book.checkedOut,
+        dueDate: book.dueDate,
+        userHasBook: userId === `${book.user_id}`,
+      };
+      res.status(200).send(responseBody);
+    });
+});
+
 app.use((req, res) => {
   res.status(404).send('resource not found');
 });
